@@ -3,7 +3,10 @@ import json
 import string
 import dateutil.parser
 import operator
+import warnings
 from bs4 import BeautifulSoup
+
+warnings.filterwarnings("ignore", category=UserWarning, module='bs4')
 
 events_file_name = "../datasets/events1.json"
 
@@ -24,6 +27,17 @@ CATEGORIES = [
     'talks',
 #     'other_stuff',
 ]
+
+def flattener(left, right):
+    try:
+        res = reduce(flattener, right, left)
+    except TypeError:
+        left.append(right)
+        res = left
+    return res
+
+def flatten(seq):
+    return reduce(flattener, seq, [])
 
 def cleanup_text(text):
     new_text = text.lower()
@@ -72,6 +86,7 @@ def export_events_data(infile,
 
         events.append({
             'description': cleanup_text(event['description']),
+            'title': cleanup_text(event['name']),
             'category': CATEGORIES.index(event['category']),
             'attrs_bool': [
                 event['seating_enabled'],
@@ -80,7 +95,7 @@ def export_events_data(infile,
                 is_weekend(starts_at),
                 is_weekend(ends_at),
             ],
-            'attrs_scale01': reduce(operator.concat, [
+            'attrs_scale01': flatten([
                 attrs_from_date(created_at),
                 attrs_from_date(starts_at),
                 attrs_from_date(ends_at),
