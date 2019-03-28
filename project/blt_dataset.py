@@ -60,8 +60,7 @@ def attrs_from_date(date):
 def is_weekend(date):
     return (date.weekday() in [5,6])
 
-def export_events_data(infile,
-        early_stop = None):
+def export_events_json_data(infile, early_stop = None):
     events_json = []
     with open(infile, 'r') as reader:
         for line in reader:
@@ -73,7 +72,11 @@ def export_events_data(infile,
 
             if early_stop and len(events_json) > early_stop:
                 break
+    return events_json
 
+def export_events_data(infile,
+        early_stop = None):
+    events_json = export_events_json_data(infile, early_stop = early_stop)
     events = []
     for event in events_json:
         category = event['category']
